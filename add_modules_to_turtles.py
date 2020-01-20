@@ -10,7 +10,7 @@ import netCDF4
 import numpy as np
 import pandas as pd
 import zlconversions as zl
-import test_doppio as dm
+import doppio_model as dm
 #import FVCOM_modules as fm
 #import gomofs_modules as gm
 
