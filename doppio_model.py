@@ -9,14 +9,11 @@ import pytz
 import glob
 import numpy as np
 import netCDF4
-#from conversions import c2f,dd2dm #
 import zlconversions as zl # Lei Zhao's module
 
-#HARDCODES ##########
-lat,lon=41.9,-70.25# mid Cape Cod Bay
-time='2018-08-15 12:00:00' # mid-August
-depth=10#'bottom' 
-###
+
+
+
 def doppio_coordinate(lat,lon):
     f1=-0.8777722604596849*lat-lon-23.507489034447012>=0
     f2=-1.072648270137022*lat-40.60872567829448-lon<=0
@@ -103,6 +100,7 @@ def get_doppio(lat=0,lon=0,depth='bottom',time='2018-11-12 12:00:00',fortype='te
             doppio_temp=nc.variables['temp']
             doppio_h=nc.variables['h']
         except:
+            print('error',date_time)
             continue
         min_diff_time=abs(datetime.datetime(2017,11,1,0,0,0)+datetime.timedelta(hours=int(doppio_time[0]))-date_time)
         min_diff_index=0
@@ -117,7 +115,7 @@ def get_doppio(lat=0,lon=0,depth='bottom',time='2018-11-12 12:00:00',fortype='te
 
         #calculate the optimal layer index
         layer_index=0  #specify the initial layer index
-        print (depth)
+        #print (depth)
         if depth!='bottom':
             #h_distance=depth+doppio_rho[0]*doppio_h[index_1,index_2]  #specify the initial distanc of high
             h_distance=doppio_h[index_1,index_2]# bottom depth
@@ -153,6 +151,12 @@ def get_doppio(lat=0,lon=0,depth='bottom',time='2018-11-12 12:00:00',fortype='te
     else:
         return point_temp,doppio_h[index_1,index_2]
 #
+'''
+#HARDCODES ##########
+lat,lon=41.9,-70.25# mid Cape Cod Bay
+time='2018-08-15 12:00:00' # mid-August
+depth=15#'bottom'
 # main
 model_temp=get_doppio(lat,lon,depth=depth,time=time)
 print (model_temp)
+'''
