@@ -67,8 +67,62 @@ def fitting(point,lat,lon):
     y = a0+a1*lat+a2*lon
 
     return y
+def get_doppio(lat=0,lon=0,depth=99999,time='2018-11-12 12:00:00'):
+    """
+    notice:
+        the format of time is like "%Y-%m-%d %H:%M:%S"
+        the default depth is under the bottom depth
+    the module only output the temperature of point location
+    """
+    import datetime
+    date_time=datetime.datetime.strptime(time,'%Y-%m-%d %H:%M:%S') # transform time format
+    if (date_time -datetime.datetime(2017,11,1,0,0,0)).total_seconds()<0:
+        point_temp=''
+        print('the date can\'t be earlier than 2017-11-1')
+        return point_temp
+    for i in range(0,7): # look back 7 hours for data
+        url_time=(date_time-datetime.timedelta(hours=i)).strftime('%Y-%m-%d')#
+        url=get_doppio_url(url_time)
+        nc=netCDF4.Dataset(url)
+        lons=nc.variables['lon_rho'][:]
+        lats=nc.variables['lat_rho'][:]
+        temp=nc.variables['temp']
+        doppio_time=nc.variables['time']
+        doppio_depth=nc.variables['h'][:]
+        min_diff_time=abs(datetime.datetime(2017,11,1,0,0,0)+datetime.timedelta(hours=int(doppio_time[0]))-date_time)
+        min_diff_index=0
+        
+        for i in range(1,157): # 6.5 days and 24
+            diff_time=abs(datetime.datetime(2017,11,1,0,0,0)+datetime.timedelta(hours=int(doppio_time[i]))-date_time)
+            if diff_time<min_diff_time:
+                min_diff_time=diff_time
+                min_diff_index=i
+                
+        min_distance=dist(lat1=lat,lon1=lon,lat2=lats[0][0],lon2=lons[0][0])
+        index_1,index_2=0,0
+        for i in range(len(lons)):
+            for j in range(len(lons[i])):
+                if min_distance>dist(lat1=lat,lon1=lon,lat2=lats[i][j],lon2=lons[i][j]):
+                    min_distance=dist(lat1=lat,lon1=lon,lat2=lats[i][j],lon2=lons[i][j])
+                    index_1=i
+                    index_2=j
+        if depth==99999:# case of bottom
+            S_coordinate=1
+        else:
+            S_coordinate=float(depth)/float(doppio_depth[index_1][index_2])
+        if 0<=S_coordinate<1:
+            point_temp=temp[min_diff_index][39-int(S_coordinate/0.025)][index_1][index_2]# because there are 0.025 between each later
+        elif S_coordinate==1:
+            point_temp=temp[min_diff_index][0][index_1][index_2]
+        else:
+            return 9999
+        if np.isnan(point_temp):
+            continue
+        if min_diff_time<datetime.timedelta(hours=1):
+            break
+    return point_temp
 
-def get_doppio(lat=0,lon=0,depth='bottom',time='2018-11-12 12:00:00',fortype='temperature'):
+def get_doppio1(lat=0,lon=0,depth='bottom',time='2018-11-12 12:00:00',fortype='temperature'):
     """
     notice:
         the format of time is like "%Y-%m-%d %H:%M:%S" this time is utctime  or it can also be datetime
