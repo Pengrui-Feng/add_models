@@ -82,7 +82,7 @@ def get_doppio(lat=0,lon=0,depth=99999,time='2018-11-12 12:00:00'):
         return point_temp
     for i in range(0,7): # look back 7 hours for data
         url_time=(date_time-datetime.timedelta(hours=i)).strftime('%Y-%m-%d')#
-        url=get_doppio_url(url_time)
+        url=zl.get_doppio_url(url_time)
         nc=netCDF4.Dataset(url)
         lons=nc.variables['lon_rho'][:]
         lats=nc.variables['lat_rho'][:]
@@ -98,12 +98,12 @@ def get_doppio(lat=0,lon=0,depth=99999,time='2018-11-12 12:00:00'):
                 min_diff_time=diff_time
                 min_diff_index=i
                 
-        min_distance=dist(lat1=lat,lon1=lon,lat2=lats[0][0],lon2=lons[0][0])
+        min_distance=zl.dist(lat1=lat,lon1=lon,lat2=lats[0][0],lon2=lons[0][0])
         index_1,index_2=0,0
         for i in range(len(lons)):
             for j in range(len(lons[i])):
-                if min_distance>dist(lat1=lat,lon1=lon,lat2=lats[i][j],lon2=lons[i][j]):
-                    min_distance=dist(lat1=lat,lon1=lon,lat2=lats[i][j],lon2=lons[i][j])
+                if min_distance>zl.dist(lat1=lat,lon1=lon,lat2=lats[i][j],lon2=lons[i][j]):
+                    min_distance=zl.dist(lat1=lat,lon1=lon,lat2=lats[i][j],lon2=lons[i][j])
                     index_1=i
                     index_2=j
         if depth==99999:# case of bottom
