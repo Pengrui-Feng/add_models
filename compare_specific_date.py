@@ -3,6 +3,7 @@
 """
 Created on Wed Feb  5 15:24:00 2020
 python2
+input date at 'start_time'
 @author: pengrui
 """
 import matplotlib.pyplot as plt
@@ -14,8 +15,8 @@ from turtleModule import str2ndlist
 db= 'tu102' #tu73,tu74,tu94,tu98,tu99,tu102
 path1='/home/zdong/PENGRUI/merge_nosplit/'
 path2='/home/zdong/PENGRUI/'
-start_time = datetime(2019,7,10).strftime('%m-%d-%Y') 
-end_time = datetime(2019,7,20).strftime('%m-%d-%Y')   # create a forder named by 'IOError'
+start_time = datetime(2019,8,1).strftime('%m-%d-%Y') 
+#end_time = datetime(2019,8,14).strftime('%m-%d-%Y')   # create a forder named by 'IOError'
 
 
 color=['g','darkviolet','orange','b','hotpink','c','peru','lime','brown','orangered','k','magenta','r','cyan','gray','y','pink','olive','indigo','coral','plum','violet','salmon','tan','navy','maroon','blue','peachpuff','slateblue','khaki','gold','chocolate',
@@ -24,7 +25,7 @@ color=['g','darkviolet','orange','b','hotpink','c','peru','lime','brown','orange
 'g','darkviolet','orange','b','hotpink','c','peru','lime','brown','orangered','k','magenta','r','cyan','gray','y','pink','olive','indigo','coral','plum','violet','salmon','tan','navy','maroon','blue','peachpuff','slateblue','khaki','gold','chocolate',
 'g','darkviolet','orange','b','hotpink','c','peru','lime','brown','orangered','k','magenta','r','cyan','gray','y','pink','olive','indigo','coral','plum','violet','salmon','tan','navy','maroon','blue','peachpuff','slateblue','khaki','gold','chocolate',
 'g','darkviolet','orange','b','hotpink','c','peru','lime','brown','orangered','k','magenta','r','cyan','gray','y','pink','olive','indigo','coral','plum','violet','salmon','tan','navy','maroon','blue','peachpuff','slateblue','khaki','gold','chocolate']
-shift = 4 # offset of profiles in degC
+shift = 12 # offset of profiles in degC
 maxdepth = 60 # maximum depth of profile plot
 t_ids=[118940, 118941, 118944, 118947, 118948, 118951, 118943, 118945,118946, 118942, 118952, 118949, 118950, 118953, 118954, #tu_73
        118884, 118894, 118896, 118885, 118887, 118888, 118889, 118890,118886, 118891, 118893, 118892, 118899, 118901, 118903, 118897,118898, 118900, 118902, 118895, 118906, 118905, 118904, 118913, #tu74
@@ -32,19 +33,31 @@ t_ids=[118940, 118941, 118944, 118947, 118948, 118951, 118943, 118945,118946, 11
        159795, 159796, 159797, 161305, 161444, 161868, 161293, 161302,161441, 161443, 172178, 172180, 172184, 161442, 161445, 172193,172181, 172189, 172177, 172182, 172183, 172185, 172186, 172187,172190, 172192, 172194, 172196, #tu98
        161426, 161427, 161428, 161432, 161433, 161435, 161429, 161436,161437, 161430, 161434, 161439, 161431, 161438, 161440, #tu_99
        161291, 161292, 161296, 172191, 175934, 175935, 161295, 175939,161299, 161303, 161294, 161297, 161298, 161300, 161301, 161304,172179, 172188, 175938, 175932, 175936, 175940] #tu_102
-
+'''
+data = pd.read_csv(path2+db+'withModels.csv')
+dive = data['dive_num']
+data['obs_temp'] = data['obs_temp'].astype('str')
+data['doppio_temp']= data['doppio_temp'].astype('str')
+data['depth']= data['depth'].astype('str')
+#data1=data.groupby(['PTT','dive_num','argos_date','lat_argos','lon_argos','gps_date','lat_gps','lon_gps']).agg(lambda x:x.str.cat(sep=','))
+data1=data.groupby(['PTT','argos_date'])['depth','obs_temp','doppio_temp'].agg(lambda x:x.str.cat(sep=','))
+data1.to_csv('tu102_adapt1.csv')
+'''
 obsData =pd.read_csv('tu102_adapt.csv') #
 obsturtle_id=obsData['PTT']
 ids=obsturtle_id.unique()#118905 # this is the interest turtle id
 
 Time = pd.Series((datetime.strptime(x, '%Y-%m-%d %H:%M:%S') for x in obsData['argos_date']))
 #indx=np.where((Time>=end_time-timedelta(days=7)) & (Time<end_time))[0]
-indx=np.where((Time>=start_time) & (Time<=end_time))[0]
+#indx=np.where((Time>=start_time) & (Time<=end_time))[0]
+indx=np.where((Time>=start_time))[0]
 time=Time[indx]
 time.sort()
 
-Data = obsData.ix[time.index]
-Data.index=range(len(indx))
+#Data = obsData.ix[time.index]
+Data = obsData.ix[time.index[0:10]]
+#Data.index=range(len(indx))
+Data.index=range(10)
 obsTime =  pd.Series((datetime.strptime(x, '%Y-%m-%d %H:%M:%S') for x in Data['argos_date']))
 obsTemp = pd.Series(str2ndlist(Data['obs_temp']))
 dopTemp = pd.Series(str2ndlist(Data['doppio_temp']))
@@ -114,9 +127,10 @@ ax2.set_title(middletime+' ~ '+maxtime)
 fig.text(0.5, 0.04, 'Temperature by time '+str(shift)+' C degree offset', ha='center', va='center', fontsize=14)#  0.5 ,0.04 represent the  plotting scale of x_axis and y_axis
 fig.text(0.06, 0.5, 'Depth(m)', ha='center', va='center', rotation='vertical',fontsize=14)
 
-#plt.savefig(path2+'/model_compare/compare_%s~%s.png'%(mintime,maxtime),dpi=200)#put the picture to the file"turtle_comparison"
+plt.savefig(path2+'/model_compare/compare_%s~%s.png'%(mintime,maxtime),dpi=200)#put the picture to the file"turtle_comparison"
 plt.show()
 
+'''
 ##### plot profile of each turtle
 for i in range(len(obsIDs)):
     e=obsIDs[i]
@@ -149,7 +163,7 @@ for i in range(len(obsIDs)):
             ax1.text(Temp_obs[j][0]+shift*j-l,Depth_e[j][0]-1,round(Temp_obs[j][0],1),color='k',fontsize=5)
     ax1.set_ylim([maxdepth,-1])
         #plt.setp(ax1.get_xticklabels() ,visible=False)
-    ax1.set_xticks([int(Temp_e[0][-1]), int(Temp_e[0][-1])+shift])
+    ax1.set_xticks([int(Temp_obs[0][-1]), int(Temp_obs[0][-1])+shift])
         #ax1.set_xticklabels(['a', 'b', 'c'])
     mintime_e=Time_e[0].strftime('%m-%d-%Y')
     maxtime_e=Time_e[len(Time_e)-1].strftime('%m-%d-%Y')
@@ -163,5 +177,6 @@ for i in range(len(obsIDs)):
     else:
         ax1.set_title(str(e) +'_profiles '+mintime_e+'~'+maxtime_e+' ')#('%s profiles(%s~%s)'% (e,obsTime[0],obsTime[-1]))
     fig.text(0.06, 0.5, 'Depth(m)', ha='center', va='center', rotation='vertical',fontsize=14)
-    #plt.savefig(path2+'per_turtle_period/%s~%s/%s_%s~%s.png'% (mintime,maxtime,e,mintime,maxtime),dpi=200)#put the picture to the file "each_profiles"
+    plt.savefig(path2+'/model_compare/%s_%s~%s.png'% (e,mintime,maxtime),dpi=200)#put the picture to the file "each_profiles"
     plt.show()
+'''
