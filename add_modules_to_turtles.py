@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jan  8 12:15:07 2020
-
+input merge csv files(spliting depth),get models temps
 @author: pengrui
 """
 from tqdm import tqdm
