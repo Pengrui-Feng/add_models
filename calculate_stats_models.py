@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Feb 11 10:45:49 2020
+comparing observed temperature with model temp of doppio and fvcom, calculate std
 
 @author: pengrui
 """
@@ -12,36 +13,55 @@ db= 'tu102' #tu73,tu74,tu94,tu98,tu99,tu102
 path2='/home/zdong/PENGRUI/'
 
 
-data = pd.read_csv(path2+db+'withModels.csv')
+data = pd.read_csv(path2+'special_data.csv')
 data = data.dropna()
-a = data['depth'].groupby(data['PTT'])
-b = data.groupby(['PTT','argos_date'])['depth'].apply(lambda x:x.tolist())
-depth = data.groupby(['PTT','argos_date'])['depth']
-obs = data.groupby(['PTT','argos_date'])['obs_temp']
-dop = data.groupby(['PTT','argos_date'])['doppio_temp']
 
+depth = data.groupby(['PTT','gps_date'])['depth'].apply(lambda x:x.tolist())
+
+obs = data.groupby(['PTT','gps_date'])['obs_temp'].apply(lambda x:x.tolist())
+dop = data.groupby(['PTT','gps_date'])['doppio_temp'].apply(lambda x:x.tolist())
+fvc = data.groupby(['PTT','gps_date'])['FVCOM_temp'].apply(lambda x:x.tolist())
 #std=
-#Data['dive_num'] = Data['argos_date'].groupby(Data['PTT']).rank()
-
+obs_suf=[]
+obs_btm=[]
+dop_suf=[]
+dop_btm=[]
+fvc_suf=[]
+fvc_btm=[]
+o_d_std=[]
+o_f_std=[]
+for i in range(len(obs)):
+    obs_suf.append(round(obs[i][0],1))
+    obs_btm.append(round(obs[i][-1],1))
+    dop_suf.append(round(dop[i][0],1))
+    dop_btm.append(round(dop[i][-1],1))
+    fvc_suf.append(round(fvc[i][0],1))
+    fvc_btm.append(round(fvc[i][-1],1))
+    
+    o_d_std.append(round(np.std(obs[i]+dop[i]),1))
+    o_f_std.append(round(np.std(obs[i]+fvc[i]),1))
+#convert format from list to series
+#obs_suf=pd.Series(obs_suf)    
+    
+    
+    
 
 
 stats = pd.DataFrame()
-#stats.set_index(keys, drop=True, append=False, inplace=False, verify_integrity=False) 
-#stats.reset_index(level=None, drop=False, inplace=False, col_level=0, col_fill='')
-
-stats['obs_bot_temp']=pd.Series(obs.min())
-stats['obs_suf_temp']=pd.Series(obs.max())
-stats['mod_suf_temp']=pd.Series(dop.max())
-stats['mod_bot_temp']=pd.Series(dop.min())
-stats['obs_mod_diff_mean']=pd.Series(dop.mean()-obs.mean())
-#stats['obs_mod_diff_mean']=pd.Series(round(dop.mean()-obs.mean(),3))
-
-
-
-
+stats['PTT']=pd.Series(depth)
+stats['PTT']=pd.Series(depth)
 stats.to_csv('stats.csv')
 stat = pd.read_csv('stats.csv')
-stat['dive_num'] = stat['argos_date'].groupby(stat['PTT']).rank()
-stat=stat[['PTT','dive_num','argos_date','obs_bot_temp','obs_suf_temp','mod_suf_temp','mod_bot_temp','obs_mod_diff_mean']]
+stat['dive_num'] = stat['gps_date'].groupby(stat['PTT']).rank()
+stat['obs_suf']=pd.Series(obs_suf)
+stat['dop_suf']=pd.Series(dop_suf)
+stat['fvc_suf']=pd.Series(fvc_suf)
+stat['obs_btm']=pd.Series(obs_btm)
+stat['dop_btm']=pd.Series(dop_btm)
+stat['fvc_btm']=pd.Series(fvc_btm)
+stat['obs_dop_std']=pd.Series(o_d_std)
+stat['obs_fvc_std']=pd.Series(o_f_std)
+stat=stat[['PTT','dive_num','gps_date','obs_suf','dop_suf','fvc_suf','obs_btm','dop_btm','fvc_btm','obs_dop_std','obs_fvc_std']]
+
 stat.to_csv('stats.csv')
 
