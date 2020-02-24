@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Tue Feb 11 10:45:49 2020
@@ -8,20 +7,17 @@ comparing observed temperature with model temp of doppio and fvcom, calculate st
 """
 import numpy as np
 import pandas as pd
-
+import matplotlib.pyplot as plt
 db= 'tu102' #tu73,tu74,tu94,tu98,tu99,tu102
 path2='/home/zdong/PENGRUI/'
 
-
 data = pd.read_csv(path2+'special_data.csv')
 data = data.dropna()
-
 depth = data.groupby(['PTT','gps_date'])['depth'].apply(lambda x:x.tolist())
-
 obs = data.groupby(['PTT','gps_date'])['obs_temp'].apply(lambda x:x.tolist())
 dop = data.groupby(['PTT','gps_date'])['doppio_temp'].apply(lambda x:x.tolist())
 fvc = data.groupby(['PTT','gps_date'])['FVCOM_temp'].apply(lambda x:x.tolist())
-#std=
+
 obs_suf=[]
 obs_btm=[]
 dop_suf=[]
@@ -36,16 +32,9 @@ for i in range(len(obs)):
     dop_suf.append(round(dop[i][0],1))
     dop_btm.append(round(dop[i][-1],1))
     fvc_suf.append(round(fvc[i][0],1))
-    fvc_btm.append(round(fvc[i][-1],1))
-    
-    o_d_std.append(round(np.std(obs[i]+dop[i]),1))
-    o_f_std.append(round(np.std(obs[i]+fvc[i]),1))
-#convert format from list to series
-#obs_suf=pd.Series(obs_suf)    
-    
-    
-    
-
+    fvc_btm.append(round(fvc[i][-1],1))    
+    o_d_std.append(round(np.std(np.array(obs[i])-np.array(dop[i])),1))
+    o_f_std.append(round(np.std(np.array(obs[i])-np.array(fvc[i])),1))
 
 stats = pd.DataFrame()
 stats['PTT']=pd.Series(depth)
@@ -62,6 +51,9 @@ stat['fvc_btm']=pd.Series(fvc_btm)
 stat['obs_dop_std']=pd.Series(o_d_std)
 stat['obs_fvc_std']=pd.Series(o_f_std)
 stat=stat[['PTT','dive_num','gps_date','obs_suf','dop_suf','fvc_suf','obs_btm','dop_btm','fvc_btm','obs_dop_std','obs_fvc_std']]
-
 stat.to_csv('stats.csv')
 
+#plt.hexbin(x=np.array(obs[1]), y=np.array(dop[1]),cmap='Blues', gridsize=30)
+plt.hist2d(x=np.array(data['obs_temp']), y=np.array(data['doppio_temp']),cmap='Blues', bins=30)
+plt.colorbar()
+plt.show()
