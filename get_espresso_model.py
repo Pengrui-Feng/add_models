@@ -2,31 +2,19 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 import netCDF4
-def watertemp(lon, lat, depth, time, url):
-        #data = get_data(url)
-        #url='http://tds.marine.rutgers.edu/thredds/dodsC/roms/espresso/2009_da/his'
-        data =netCDF4.Dataset(url)
-        lons = data['lon_rho'][:]
-        lats = data['lat_rho'][:]
-        #temp = data['temp']
-        if type(lon) is list or type(lon) is np.ndarray:
-            t = []
-            for i in range(len(time)):
-                #print(i)
-                if i%100==0:
-                    print (i)
-                #print('depth: ', depth[i])
-                watertemp = __watertemp(lon[i], lat[i], lons, lats, depth[i], time[i], data)
-                t.append(watertemp)
-            t = np.array(t)
-        else:
-            dwatertemp = __watertemp(lon, lat, lons, lats, depth, time, data)
-            t = watertemp
-        return t
-def get_url(starttime, endtime):
-    starttime = starttime
-    # hours = int((endtime-starttime).total_seconds()/60/60) # get total hours
-    # time_r = datetime(year=2006,month=1,day=9,hour=1,minute=0)
+def get_espresso_temp(lon, lat, depth, time, url):
+    url=get_url(time)
+    data =netCDF4.Dataset(url)
+    lons = data['lon_rho'][:]
+    lats = data['lat_rho'][:]
+    index = nearest_point_index2(lon,lat,lons,lats)
+    depth_layers = data['h'][index[0][0]][index[1][0]]*data['s_rho']
+    layer = np.argmin(abs(depth_layers+depth)) # Be careful, all depth_layers are negative numbers
+    time_index = closest_num((time-datetime(2006,1,1,0,0,0)).total_seconds(),oceantime) - index[1][0]
+    temp = data['temp'][time_index, layer, index[0][0], index[1][0]]
+    print(depth_layers)
+    return temp
+def get_url(starttime):
     if (starttime- datetime(2013,5,18)).total_seconds()/3600>25:
         #url_oceantime = 'http://tds.marine.rutgers.edu:8080/thredds/dodsC/roms/espresso/hidden/2006_da/his?ocean_time'
         #url_oceantime = 'http://tds.marine.rutgers.edu:8080/thredds/dodsC/roms/espresso/2013_da/his_Best/ESPRESSO_Real-Time_v2_History_Best_Available_best.ncd?time'
@@ -35,14 +23,11 @@ def get_url(starttime, endtime):
         t1 = (starttime - datetime(2013,5,18)).total_seconds()/3600 # for url2006 it's 2006,01,01; for url2013, it's 2013,05,18, and needed to be devide with 3600
         t2 = (endtime - datetime(2013,5,18)).total_seconds()/3600
         index1 = closest_num(t1, oceantime)
-        index2 = closest_num(t2, oceantime)
-        # index1 = (starttime - time_r).total_seconds()/60/60
-        # index2 = index1 + hours
         # url = 'http://tds.marine.rutgers.edu:8080/thredds/dodsC/roms/espresso/2006_da/his?h[0:1:81][0:1:129],s_rho[0:1:35],lon_rho[0:1:81][0:1:129],lat_rho[0:1:81][0:1:129],mask_rho[0:1:81][0:1:129],u[{0}:1:{1}][0:1:35][0:1:81][0:1:128],v[{0}:1:{1}][0:1:35][0:1:80][0:1:129]'
         #url = 'http://tds.marine.rutgers.edu:8080/thredds/dodsC/roms/espresso/hidden/2006_da/his?s_rho[0:1:35],h[0:1:81][0:1:129],lon_rho[0:1:81][0:1:129],lat_rho[0:1:81][0:1:129],temp[{0}:1:{1}][0:1:35][0:1:81][0:1:129],ocean_time'
         #url = 'http://tds.marine.rutgers.edu:8080/thredds/dodsC/roms/espresso/2013_da/his_Best/ESPRESSO_Real-Time_v2_History_Best_Available_best.ncd?h[0:1:81][0:1:129],s_rho[0:1:35],lon_rho[0:1:81][0:1:129],lat_rho[0:1:81][0:1:129],temp[{0}:1:{1}][0:1:35][0:1:81][0:1:129],time' 
         url = 'http://tds.marine.rutgers.edu/thredds/dodsC/roms/espresso/2013_da/his/ESPRESSO_Real-Time_v2_History_Best?s_rho[0:1:35],lon_rho[0:1:81][0:1:129],lat_rho[0:1:81][0:1:129],time[0:1:32387],h[0:1:81][0:1:129],temp[0:1:32387][0:1:35][0:1:81][0:1:129]'
-        url = url.format(index1, index2)
+        url = url.format(index1)
     else :
         #url_oceantime = 'http://tds.marine.rutgers.edu:8080/thredds/dodsC/roms/espresso/hidden/2006_da/his?ocean_time'
         url_oceantime='http://tds.marine.rutgers.edu/thredds/dodsC/roms/espresso/2009_da/his?ocean_time'#[0:1:19145]
@@ -50,11 +35,9 @@ def get_url(starttime, endtime):
         t1 = (starttime - datetime(2006,1,1)).total_seconds() # for url2006 it's 2006,01,01; for url2013, it's 2013,05,18, and needed to be devide with 3600
         t2 = (endtime - datetime(2006,1,1)).total_seconds()
         index1 = closest_num(t1, oceantime)
-        #print 'index1' ,index1
-        index2 = closest_num(t2, oceantime)
         #url = 'http://tds.marine.rutgers.edu:8080/thredds/dodsC/roms/espresso/hidden/2006_da/his?s_rho[0:1:35],h[0:1:81][0:1:129],lon_rho[0:1:81][0:1:129],lat_rho[0:1:81][0:1:129],temp[{0}:1:{1}][0:1:35][0:1:81][0:1:129],ocean_time'
         url='http://tds.marine.rutgers.edu/thredds/dodsC/roms/espresso/2009_da/his?s_rho[0:1:35],h[0:1:81][0:1:129],lon_rho[0:1:81][0:1:129],lat_rho[0:1:81][0:1:129],ocean_time[0:1:19145],temp[0:1:19145][0:1:35][0:1:81][0:1:129]'
-        url = url.format(index1, index2)
+        url = url.format(index1)
     return url
 
 def closest_num(num, numlist, i=0):
