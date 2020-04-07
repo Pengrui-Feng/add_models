@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 import netCDF4
-def get_espresso_temp(lon, lat, depth, time, url):
+def get_espresso_temp(lon, lat, depth, time):
     url=get_url(time)
     data =netCDF4.Dataset(url)
     lons = data['lon_rho'][:]
@@ -14,6 +14,44 @@ def get_espresso_temp(lon, lat, depth, time, url):
     temp = data['temp'][time_index, layer, index[0][0], index[1][0]]
     print(depth_layers)
     return temp
+def get_espresso_temp1(time,lat,lon,depth) :    
+    #according to doppio model structure , data is from 2009-10-12 to 2017-1-1
+    url=get_url(time)
+    nc=netCDF4.Dataset(url).variables
+    #first find the index of the grid 
+    lons=nc['lon_rho'][:]
+    lats=nc['lat_rho'][:]
+    temp=nc['temp']
+    #second find the index of time
+    if time<=datetime(2013,5,18):
+        espresso_time=nc['ocean_time']
+    else:
+        espresso_time=nc['time']
+    itime = netCDF4.date2index(time,doppio_time,select='nearest')# where startime in datetime
+    # figure out layer from depth
+    
+    min_distance=dist(lat1=lat,lon1=lon,lat2=lats[0][0],lon2=lons[0][0])   
+    index_1,index_2=0,0
+    for i in range(len(lons)):
+        for j in range(len(lons[i])):
+            if min_distance>dist(lat1=lat,lon1=lon,lat2=lats[i][j],lon2=lons[i][j]):
+                min_distance=dist(lat1=lat,lon1=lon,lat2=lats[i][j],lon2=lons[i][j])
+                index_1=i
+                index_2=j
+    
+    espresso_depth=nc['h'][index_1][index_2]
+    if depth >espresso_depth:# case of bottom
+        S_coordinate=1
+    else:
+        S_coordinate=float(depth)/float(doppio_depth)
+    if 0<=S_coordinate<1:
+       espresso_temp=temp[itime,35-int(S_coordinate/0.025),index_1,index_2]# because there are 0.025 between each later
+    elif S_coordinate==1:
+       espresso_temp=temp[itime][0][index_1][index_2]
+    else:
+       espresso_temp=temp[itime][0][index_1][index_2]
+    
+    return espresso_temp
 def get_url(starttime):
     if (starttime- datetime(2013,5,18)).total_seconds()/3600>25:
         #url_oceantime = 'http://tds.marine.rutgers.edu:8080/thredds/dodsC/roms/espresso/hidden/2006_da/his?ocean_time'
