@@ -9,9 +9,13 @@ def get_espresso_temp(lon, lat, depth, time):
     lons = data['lon_rho'][:]
     lats = data['lat_rho'][:]
     index = nearest_point_index2(lon,lat,lons,lats)
+    if time<=datetime(2013,5,18):
+        espresso_time=data['ocean_time']
+    else:
+        espresso_time=data['time']    
     depth_layers = data['h'][index[0][0]][index[1][0]]*data['s_rho']
     layer = np.argmin(abs(depth_layers+depth)) # Be careful, all depth_layers are negative numbers
-    time_index = closest_num((time-datetime(2006,1,1,0,0,0)).total_seconds(),oceantime) - index[1][0]
+    time_index = closest_num((time-datetime(2006,1,1,0,0,0)).total_seconds(),espresso_time) - index[1][0]
     temp = data['temp'][time_index, layer, index[0][0], index[1][0]]
     print(depth_layers)
     return temp
@@ -28,7 +32,7 @@ def get_espresso_temp1(time,lat,lon,depth) :
         espresso_time=nc['ocean_time']
     else:
         espresso_time=nc['time']
-    itime = netCDF4.date2index(time,doppio_time,select='nearest')# where startime in datetime
+    itime = netCDF4.date2index(time,espresso_time,select='nearest')# where startime in datetime
     # figure out layer from depth
     
     min_distance=dist(lat1=lat,lon1=lon,lat2=lats[0][0],lon2=lons[0][0])   
