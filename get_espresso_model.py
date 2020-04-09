@@ -17,7 +17,7 @@ def get_espresso_temp(time,lat, lon, depth):
     layer = np.argmin(abs(depth_layers+depth)) # Be careful, all depth_layers are negative numbers
     time_index = closest_num((time-datetime(2006,1,1,0,0,0)).total_seconds(),espresso_time) - index[1][0]
     temp = data['temp'][time_index, layer, index[0][0], index[1][0]]
-    print(depth_layers)
+    #print(depth_layers)
     return temp
 def get_espresso_temp1(time,lat,lon,depth) :    
     #according to doppio model structure , data is from 2009-10-12 to 2017-1-1
