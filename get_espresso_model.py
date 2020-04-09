@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 import netCDF4
-def get_espresso_temp(lon, lat, depth, time):
+def get_espresso_temp(time,lat, lon, depth):
     #according to former student's code
     url=get_url(time)
     data =netCDF4.Dataset(url)
