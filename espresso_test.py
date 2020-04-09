@@ -1,7 +1,7 @@
 import netCDF4
 import numpy as np
 from datetime import datetime
-import get_espresso_model
+from get_espresso_model import*
 #get the same temp no matter what the depth
 #the data duration offunction 'get_espresso_temp1' from 2009-10-12 to 2017-1-1
 #the data duration offunction 'get_espresso_temp' from 2009-10-12 to 2013-5-18
