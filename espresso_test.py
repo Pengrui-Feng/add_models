@@ -6,7 +6,6 @@ import get_espresso_model
 #the data duration offunction 'get_espresso_temp1' from 2009-10-12 to 2017-1-1
 #the data duration offunction 'get_espresso_temp' from 2009-10-12 to 2013-5-18
 time= datetime(2012,3,5)
-time= datetime(2014,8,12)
 lat,lon= 39 , -70
 depth = 20
 
