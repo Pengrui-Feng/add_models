@@ -48,7 +48,7 @@ def get_espresso_temp1(time,lat,lon,depth) :
     if depth >espresso_depth:# case of bottom
         S_coordinate=1
     else:
-        S_coordinate=float(depth)/float(doppio_depth)
+        S_coordinate=float(depth)/float(espresso_depth)
     if 0<=S_coordinate<1:
        espresso_temp=temp[itime,35-int(S_coordinate/0.025),index_1,index_2]# because there are 0.025 between each later
     elif S_coordinate==1:
