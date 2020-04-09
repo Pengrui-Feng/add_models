@@ -10,6 +10,6 @@ lat,lon= 39 , -70
 depth = 20
 
 temp1 = get_espresso_temp1(time,lat,lon,depth)
-temp = get_esptesso_temp(time,lat,lon,depth)
+temp2 = get_espresso_temp(time,lat,lon,depth)
 print(temp1)
 print(temp2)
