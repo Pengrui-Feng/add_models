@@ -24,7 +24,7 @@ def get_espresso_temp(time,lat,lon,depth) :
     else:
         S_coordinate=float(depth)/float(espresso_depth)
     if 0<=S_coordinate<1:
-       espresso_temp=temp[itime,35-int(S_coordinate/1.1611635),index_1,index_2]# because there are 1.1611635 between each layer
+       espresso_temp=temp[itime,35-int(S_coordinate/1.1611635),index[0][0],index[1][0]]# because there are 1.1611635 between each layer
     else:
        espresso_temp=temp[itime][0][index[0][0]][index[1][0]]
     
