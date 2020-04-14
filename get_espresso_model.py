@@ -2,8 +2,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 import netCDF4
-
-def get_espresso_temp(time,lat,lon,depth) :    
+ef get_espresso_temp(time,lat,lon,depth) :    
     #according to doppio model structure , data is from 2009-10-12 to 2017-1-1
     url=get_url(time)
     nc=netCDF4.Dataset(url).variables
@@ -18,18 +17,10 @@ def get_espresso_temp(time,lat,lon,depth) :
         espresso_time=nc['time']
     itime = netCDF4.date2index(time,espresso_time,select='nearest')
     index = nearest_point_index2(lon,lat,lons,lats) 
-    espresso_depth=nc['h'][index[0][0]][index[1][0]]
-    if depth >espresso_depth:# case of bottom
-        S_coordinate=1
-    else:
-        S_coordinate=float(depth)/float(espresso_depth)
-    if 0<=S_coordinate<1:
-       espresso_temp=temp[itime,35-int(S_coordinate/1.1611635),index[0][0],index[1][0]]# because there are 1.1611635 between each layer
-    else:
-       espresso_temp=temp[itime][0][index[0][0]][index[1][0]]
-    
+    depth_layers=nc['h'][index[0][0]][index[1][0]]*nc['s_rho']
+    index_depth=np.argmin(abs(depth+depth_layers))
+    espresso_temp=temp[itime,index_depth,index[0][0],index[1][0]]
     return espresso_temp
-
 def get_url(time):
     # hours = int((endtime-starttime).total_seconds()/60/60) # get total hours
     # time_r = datetime(year=2006,month=1,day=9,hour=1,minute=0)
