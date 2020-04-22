@@ -7,16 +7,14 @@ found another one called get_doppio_test.py which has different method not using
 @author: pengrui
 """
 
-from datetime import datetime as dt
-from datetime import timedelta
-import datetime
+from datetime import timedelta,datetime
 from dateutil import parser
 import pandas as pd
 import pytz
 import glob
 import numpy as np
 import netCDF4
-import zlconversions as zl # Lei Zhao's module
+#import zlconversions as zl # Lei Zhao's module
 
 def get_doppio_url(date):
     url='http://tds.marine.rutgers.edu/thredds/dodsC/roms/doppio/2017_da/his/runs/History_RUN_2018-11-12T00:00:00Z'
@@ -31,8 +29,8 @@ def get_doppio(lat,lon,time,depth):
     the module only output the temperature of point location
     """
     time=dt.strptime(time,'%Y-%m-%d %H:%M:%S') # transform time format
-    if (time -datetime.datetime(2017,11,1,0,0,0)).total_seconds()<0:
-        print('the date can\'t be earlier than 2017-11-1')
+    if (time -datetime(2017,11,1,0,0,0)).total_seconds()<0:
+        #print('the date can\'t be earlier than 2017-11-1')
         return np.nan
     
     url_time=time.strftime('%Y-%m-%d')#
