@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jan  8 12:15:07 2020
-input merge csv files(spliting depth),get models temps
+input merge csv files(spliting depth),get models temps, output split-format and nosplit-format
 @author: pengrui
 """
 from tqdm import tqdm
@@ -10,14 +10,15 @@ import netCDF4
 import numpy as np
 import pandas as pd
 import zlconversions as zl
-from get_doppio_model import *
-from get_fvcom_model import *
-from get_espresso_model import *
+from doppio_model import *
+from fvcom_model import *
+from espresso_model import *
 from datetime import datetime 
 
-db= 'tu102' #tu73,tu74,tu94,tu98,tu99,tu102
+db= 'tu88' #tu73,tu74,tu94,tu98,tu99,tu102
 path1='/content/drive/My Drive/PENGRUI/merge_split/'
 
+# read database merged split files
 Data = pd.read_csv(path1+db+'_merge_split.csv')
 date = pd.to_datetime(Data['gps_date'])
 lat = Data['lat_gps']
@@ -27,6 +28,7 @@ date1 = pd.to_datetime(Data['argos_date'])
 lat1=Data['lat_argos']
 lon1=Data['lon_argos']
 #temp = Data['temp']
+
 
 doppio_temp = []
 FVCOM_temp = []
@@ -49,6 +51,7 @@ Data['FVCOM_temp']=pd.DataFrame(FVCOM_temp)
 Data['espresso_temp']=pd.DataFrame(espresso_temp)
 Data.rename(index=str, columns={"temp": "obs_temp"},inplace=True)
 Data=Data[['PTT','dive_num','argos_date','lat_argos','lon_argos','gps_date','lat_gps','lon_gps','depth','obs_temp','FVCOM_temp','doppio_temp','espresso_temp']]
+Data.to_csv('/content/drive/My Drive/'+db+'wModelsplit.csv')
 Data['depth']= Data['depth'].astype('str')
 Data['obs_temp']= Data['obs_temp'].astype('str')
 Data['FVCOM_temp']= Data['FVCOM_temp'].astype('str')
